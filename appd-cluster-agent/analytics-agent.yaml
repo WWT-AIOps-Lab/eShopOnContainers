@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: 
+  name: appd-infra-agent
+spec: 
+  selector:
+    matchLabels:
+      name: appd-infra-agent
+  template: 
+    metadata: 
+      labels: 
+        name: appd-infra-agent
+    spec:
+      serviceAccountName: appdynamics-infraviz
+      containers:
+      - name: appd-analytics-agent
+        envFrom:
+        - configMapRef:
+            name: analytics-controller-info
+        env:
+        - name: APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: controller-key
+              name: analytics-agent-secret
+        - name: APPDYNAMICS_EVENTS_API_URL
+          valueFrom:
+            configMapKeyRef:
+              key: EVENT_ENDPOINT
+              name: analytics-controller-info
+        - name: APPDYNAMICS_GLOBAL_ACCOUNT_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: FULL_ACCOUNT_NAME
+              name: analytics-controller-info
+        image: docker.io/appdynamics/analytics-agent:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9090
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 900M
+          requests:
+            cpu: 100m
+            memory: 600M
+        volumeMounts:
+        - name: ma-log-volume
+          mountPath: /opt/appdynamics/conf/logging/log4j.xml
+          subPath: log4j.xml
+        - mountPath: /hostroot
+          name: hostroot
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+      - name: ma-log-volume
+        configMap:
+          name: ma-log-config
+      - name: hostroot
+        hostPath:
+          path: /
+          type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: appd-infra-agent-service
+spec:
+  selector:
+    name: appd-infra-agent
+  ports:
+  - name: "9090"
+    port: 9090
+    targetPort: 9090
+status:
+  loadBalancer: {}

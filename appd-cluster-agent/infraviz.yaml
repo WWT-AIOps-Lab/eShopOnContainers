@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: appdynamics-infraviz
+  namespace: appdynamics
+---
+apiVersion: appdynamics.com/v1alpha1
+kind: InfraViz
+metadata:
+  name: appd-infraviz
+  namespace: appdynamics
+spec:
+  controllerUrl: "https://wwt.saas.appdynamics.com:443"
+  image: "docker.io/appdynamics/machine-agent:latest"
+  account: "wwt"
+  globalAccount: "wwt_5fa80e5d-506e-4f6c-a51a-00d4802123c0"
+  enableContainerHostId: true
+  enableServerViz: true
+  enableDockerViz: false
+  netVizImage: appdynamics/machine-agent-netviz:latest
+  netVizPort: 3892
+  resources:
+    limits:
+      cpu: 500m
+      memory: "1G"
+    requests:
+      cpu: 200m
+      memory: "800M"

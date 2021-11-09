@@ -1,0 +1,37 @@
+apiVersion: appdynamics.com/v1alpha1
+kind: Clusteragent
+metadata:
+  name: eshop-cluster-agent
+  namespace: appdynamics
+spec:
+  appName: "eShop"
+  controllerUrl: "https://wwt.saas.appdynamics.com:443"
+  account: "wwt"
+  # docker image info
+  serviceAccountName: appdynamics-cluster-agent
+  logLevel: "DEBUG"
+  image: "docker.io/appdynamics/cluster-agent:latest"
+  nsToMonitor:
+    - "appdynamics"
+    - "default"
+    - "ingress-nginx"
+    - "kube-node-lease"
+    - "kube-public"
+    - "kube-system"
+  instrumentationMethod: Env
+  nsToInstrumentRegex: default
+  appNameStrategy: manual
+  defaultAppName: eShop
+  instrumentationRules:
+    - namespaceRegex: default
+      appName: eShop
+      language: dotnetcore
+      imageInfo:
+        image: "docker.io/appdynamics/dotnet-core-agent:21.7.0"
+        agentMountPath: /opt/appdynamics
+        imagePullPolicy: Always
+      netvizInfo:
+        bciEnabled: true
+        port: 3892
+      analyticsHost: analytics-proxy
+      analyticsPort: 9090
