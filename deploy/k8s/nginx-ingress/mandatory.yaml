@@ -167,6 +167,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-ingress-controller
+  annotations:
+    nginx.org/location-snippets: |
+      location / {
+        sub_filter      <head>
+          '<head><script>window["adrum-app-key"]="AD-AAB-ABJ-FWU";window["adrum-start-time"]=new Date().getTime();</script><script type="text/javascript" src="//cdn.appdynamics.com/adrum/adrum-latest.js"></script>';
+        sub_filter_once on;
+      }
   namespace: ingress-nginx
   labels:
     app.kubernetes.io/name: ingress-nginx
