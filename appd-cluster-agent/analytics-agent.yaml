@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata: 
-  name: appd-infra-agent
+  name: appd-analytics-agent
 spec: 
   selector:
     matchLabels:
-      name: appd-infra-agent
+      name: appd-analytics-agent
   template: 
     metadata: 
       labels: 
-        name: appd-infra-agent
+        name: appd-analytics-agent
     spec:
       serviceAccountName: appdynamics-infraviz
       containers:
@@ -65,10 +65,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: appd-infra-agent-service
+  name: appd-analytics-agent-service
 spec:
   selector:
-    name: appd-infra-agent
+    name: appd-analytics-agent
   ports:
   - name: "9090"
     port: 9090

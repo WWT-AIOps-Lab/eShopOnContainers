@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eshop-webspa
+  annotations:
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      sub_filter <head>
+        '<head><script>window["adrum-app-key"]="AD-AAB-ABJ-FWU";window["adrum-start-time"]=new Date().getTime(); (function(config){config.spa = {"spa2": true};})(window["adrum-config"] || (window["adrum-config"] = {}));</script><script type="text/javascript" src="//cdn.appdynamics.com/adrum/adrum-latest.js"></script>';
+      sub_filter_once on;
+spec:
+  rules:
+  - host: eshop.04e7ca8494a9414e88e2.centralus.aksapp.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: webspa
+            port:
+              number: 80

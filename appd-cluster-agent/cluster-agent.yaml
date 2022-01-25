@@ -27,7 +27,7 @@ spec:
       appName: eShop
       language: dotnetcore
       imageInfo:
-        image: "docker.io/appdynamics/dotnet-core-agent:21.7.0"
+        image: "docker.io/appdynamics/dotnet-core-agent:latest"
         agentMountPath: /opt/appdynamics
         imagePullPolicy: Always
       netvizInfo:
