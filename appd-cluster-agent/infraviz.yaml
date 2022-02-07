@@ -4,7 +4,7 @@ metadata:
   name: appdynamics-infraviz
   namespace: appdynamics
 ---
-apiVersion: appdynamics.com/v1alpha1
+apiVersion: cluster.appdynamics.com/v1alpha1
 kind: InfraViz
 metadata:
   name: appd-infraviz

@@ -1,4 +1,4 @@
-apiVersion: appdynamics.com/v1alpha1
+apiVersion: cluster.appdynamics.com/v1alpha1
 kind: Clusteragent
 metadata:
   name: eshop-cluster-agent
