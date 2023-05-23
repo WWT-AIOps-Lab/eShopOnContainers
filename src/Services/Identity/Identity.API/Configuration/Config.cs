@@ -1,8 +1,4 @@
-﻿using IdentityServer4;
-using IdentityServer4.Models;
-using System.Collections.Generic;
-
-namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
+﻿namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
 {
     public class Config
     {
@@ -20,6 +16,21 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
             };
         }
 
+        // ApiScope is used to protect the API 
+        //The effect is the same as that of API resources in IdentityServer 3.x
+        public static IEnumerable<ApiScope> GetApiScopes()
+        {
+            return new List<ApiScope>
+            {
+                new ApiScope("orders", "Orders Service"),
+                new ApiScope("basket", "Basket Service"),
+                new ApiScope("mobileshoppingagg", "Mobile Shopping Aggregator"),
+                new ApiScope("webshoppingagg", "Web Shopping Aggregator"),
+                new ApiScope("orders.signalrhub", "Ordering Signalr Hub"),
+                new ApiScope("webhooks", "Webhooks registration Service"),
+            };
+        }
+
         // Identity resources are data like user ID, name, or email address of a user
         // see: http://docs.identityserver.io/en/release/configuration/resources.html
         public static IEnumerable<IdentityResource> GetResources()
@@ -32,7 +43,7 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
         }
 
         // client want to access resources (aka scopes)
-        public static IEnumerable<Client> GetClients(Dictionary<string, string> clientsUrl)
+        public static IEnumerable<Client> GetClients(IConfiguration configuration)
         {
             return new List<Client>
             {
@@ -43,10 +54,10 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     ClientName = "eShop SPA OpenId Client",
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowAccessTokensViaBrowser = true,
-                    RedirectUris =           { $"{clientsUrl["Spa"]}/" },
+                    RedirectUris =           { $"{configuration["SpaClient"]}/" },
                     RequireConsent = false,
-                    PostLogoutRedirectUris = { $"{clientsUrl["Spa"]}/" },
-                    AllowedCorsOrigins =     { $"{clientsUrl["Spa"]}" },
+                    PostLogoutRedirectUris = { $"{configuration["SpaClient"]}/" },
+                    AllowedCorsOrigins =     { $"{configuration["SpaClient"]}" },
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -68,10 +79,10 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     {
                         new Secret("secret".Sha256())
                     },
-                    RedirectUris = { clientsUrl["Xamarin"] },
+                    RedirectUris = { configuration["XamarinCallback"] },
                     RequireConsent = false,
                     RequirePkce = true,
-                    PostLogoutRedirectUris = { $"{clientsUrl["Xamarin"]}/Account/Redirecting" },
+                    PostLogoutRedirectUris = { $"{configuration["XamarinCallback"]}/Account/Redirecting" },
                     //AllowedCorsOrigins = { "http://eshopxamarin" },
                     AllowedScopes = new List<string>
                     {
@@ -93,21 +104,23 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     ClientName = "MVC Client",
                     ClientSecrets = new List<Secret>
                     {
+
                         new Secret("secret".Sha256())
                     },
-                    ClientUri = $"{clientsUrl["Mvc"]}",                             // public uri of the client
-                    AllowedGrantTypes = GrantTypes.Hybrid,
+                    ClientUri = $"{configuration["MvcClient"]}",                             // public uri of the client
+                    AllowedGrantTypes = GrantTypes.Code,
                     AllowAccessTokensViaBrowser = false,
                     RequireConsent = false,
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = true,
+                    RequirePkce = false,
                     RedirectUris = new List<string>
                     {
-                        $"{clientsUrl["Mvc"]}/signin-oidc"
+                        $"{configuration["MvcClient"]}/signin-oidc"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $"{clientsUrl["Mvc"]}/signout-callback-oidc"
+                        $"{configuration["MvcClient"]}/signout-callback-oidc"
                     },
                     AllowedScopes = new List<string>
                     {
@@ -131,19 +144,19 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     {
                         new Secret("secret".Sha256())
                     },
-                    ClientUri = $"{clientsUrl["WebhooksWeb"]}",                             // public uri of the client
-                    AllowedGrantTypes = GrantTypes.Hybrid,
+                    ClientUri = $"{configuration["WebhooksWebClient"]}",                             // public uri of the client
+                    AllowedGrantTypes = GrantTypes.Code,
                     AllowAccessTokensViaBrowser = false,
                     RequireConsent = false,
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = true,
                     RedirectUris = new List<string>
                     {
-                        $"{clientsUrl["WebhooksWeb"]}/signin-oidc"
+                        $"{configuration["WebhooksWebClient"]}/signin-oidc"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $"{clientsUrl["WebhooksWeb"]}/signout-callback-oidc"
+                        $"{configuration["WebhooksWebClient"]}/signout-callback-oidc"
                     },
                     AllowedScopes = new List<string>
                     {
@@ -163,18 +176,18 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     {
                         new Secret("secret".Sha256())
                     },
-                    ClientUri = $"{clientsUrl["Mvc"]}",                             // public uri of the client
-                    AllowedGrantTypes = GrantTypes.Hybrid,
+                    ClientUri = $"{configuration["Mvc"]}",                             // public uri of the client
+                    AllowedGrantTypes = GrantTypes.Code,
                     AllowAccessTokensViaBrowser = true,
                     RequireConsent = false,
                     AllowOfflineAccess = true,
                     RedirectUris = new List<string>
                     {
-                        $"{clientsUrl["Mvc"]}/signin-oidc"
+                        $"{configuration["MvcClient"]}/signin-oidc"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $"{clientsUrl["Mvc"]}/signout-callback-oidc"
+                        $"{configuration["MvcClient"]}/signout-callback-oidc"
                     },
                     AllowedScopes = new List<string>
                     {
@@ -194,8 +207,8 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowAccessTokensViaBrowser = true,
 
-                    RedirectUris = { $"{clientsUrl["BasketApi"]}/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { $"{clientsUrl["BasketApi"]}/swagger/" },
+                    RedirectUris = { $"{configuration["BasketApiClient"]}/swagger/oauth2-redirect.html" },
+                    PostLogoutRedirectUris = { $"{configuration["BasketApiClient"]}/swagger/" },
 
                     AllowedScopes =
                     {
@@ -209,8 +222,8 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowAccessTokensViaBrowser = true,
 
-                    RedirectUris = { $"{clientsUrl["OrderingApi"]}/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { $"{clientsUrl["OrderingApi"]}/swagger/" },
+                    RedirectUris = { $"{configuration["OrderingApiClient"]}/swagger/oauth2-redirect.html" },
+                    PostLogoutRedirectUris = { $"{configuration["OrderingApiClient"]}/swagger/" },
 
                     AllowedScopes =
                     {
@@ -224,8 +237,8 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowAccessTokensViaBrowser = true,
 
-                    RedirectUris = { $"{clientsUrl["MobileShoppingAgg"]}/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { $"{clientsUrl["MobileShoppingAgg"]}/swagger/" },
+                    RedirectUris = { $"{configuration["MobileShoppingAggClient"]}/swagger/oauth2-redirect.html" },
+                    PostLogoutRedirectUris = { $"{configuration["MobileShoppingAggClient"]}/swagger/" },
 
                     AllowedScopes =
                     {
@@ -239,8 +252,8 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowAccessTokensViaBrowser = true,
 
-                    RedirectUris = { $"{clientsUrl["WebShoppingAgg"]}/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { $"{clientsUrl["WebShoppingAgg"]}/swagger/" },
+                    RedirectUris = { $"{configuration["WebShoppingAggClient"]}/swagger/oauth2-redirect.html" },
+                    PostLogoutRedirectUris = { $"{configuration["WebShoppingAggClient"]}/swagger/" },
 
                     AllowedScopes =
                     {
@@ -255,8 +268,8 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Configuration
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowAccessTokensViaBrowser = true,
 
-                    RedirectUris = { $"{clientsUrl["WebhooksApi"]}/swagger/oauth2-redirect.html" },
-                    PostLogoutRedirectUris = { $"{clientsUrl["WebhooksApi"]}/swagger/" },
+                    RedirectUris = { $"{configuration["WebhooksApiClient"]}/swagger/oauth2-redirect.html" },
+                    PostLogoutRedirectUris = { $"{configuration["WebhooksApiClient"]}/swagger/" },
 
                     AllowedScopes =
                     {

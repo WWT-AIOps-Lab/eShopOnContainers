@@ -36,8 +36,12 @@ namespace Ordering.BackgroundTasks.Services
                 _logger.LogDebug("GracePeriodManagerService background task is doing background work.");
 
                 CheckConfirmedGracePeriodOrders();
-
-                await Task.Delay(_settings.CheckUpdateTime, stoppingToken);
+                try {
+                    await Task.Delay(_settings.CheckUpdateTime, stoppingToken);
+                }
+                catch (TaskCanceledException exception) {
+                    _logger.LogCritical(exception, "TaskCanceledException Error", exception.Message);
+                }
             }
 
             _logger.LogDebug("GracePeriodManagerService background task is stopping.");
@@ -63,23 +67,21 @@ namespace Ordering.BackgroundTasks.Services
         {
             IEnumerable<int> orderIds = new List<int>();
 
-            using (var conn = new SqlConnection(_settings.ConnectionString))
+            using var conn = new SqlConnection(_settings.ConnectionString);
+            try
             {
-                try
-                {
-                    conn.Open();
-                    orderIds = conn.Query<int>(
-                        @"SELECT Id FROM [ordering].[orders] 
-                            WHERE DATEDIFF(minute, [OrderDate], GETDATE()) >= @GracePeriodTime
-                            AND [OrderStatusId] = 1",
-                        new { _settings.GracePeriodTime });
-                }
-                catch (SqlException exception)
-                {
-                    _logger.LogCritical(exception, "FATAL ERROR: Database connections could not be opened: {Message}", exception.Message);
-                }
-
+                conn.Open();
+                orderIds = conn.Query<int>(
+                    @"SELECT Id FROM [ordering].[orders] 
+                        WHERE DATEDIFF(minute, [OrderDate], GETDATE()) >= @GracePeriodTime
+                        AND [OrderStatusId] = 1",
+                    new { _settings.GracePeriodTime });
             }
+            catch (SqlException exception)
+            {
+                _logger.LogCritical(exception, "FATAL ERROR: Database connections could not be opened: {Message}", exception.Message);
+            }
+
 
             return orderIds;
         }
